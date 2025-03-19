@@ -6,8 +6,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
-
 @Configuration
 public class SecurityConfig {
 
@@ -19,16 +17,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())  // Disable CSRF protection (Use caution if handling forms)
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(antMatcher("/api/auth/register"), antMatcher("/api/auth/login")).permitAll()
-                        .anyRequest().authenticated() // All other requests need authentication
+                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                        .anyRequest().authenticated()
                 )
-                .formLogin(login -> login  // Enables form-based login (required for auth)
-                        .loginPage("/login")  // Specify a login page (optional)
+                .formLogin(form -> form
+                        .loginPage("/login") // Default login page (optional)
                         .permitAll()
                 )
-                .logout(logout -> logout.permitAll()); // Enables logout
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .permitAll()
+                );
 
         return http.build();
     }
