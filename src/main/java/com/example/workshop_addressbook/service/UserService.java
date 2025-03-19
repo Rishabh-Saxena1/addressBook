@@ -5,6 +5,7 @@ import com.example.workshop_addressbook.model.User;
 import com.example.workshop_addressbook.repository.UserRepository;
 import com.example.workshop_addressbook.security.JwtUtil;
 import com.example.workshop_addressbook.security.PasswordEncoderService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +25,8 @@ public class UserService {
     private JwtUtil jwtUtil;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     public String registerUser(UserDTO userDTO) {
         if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
@@ -37,6 +40,7 @@ public class UserService {
         user.setRole("USER");
 
         userRepository.save(user);
+        rabbitTemplate.convertAndSend("AddressBookExchange", "userKey", user.getEmail());
         return "User registered successfully!";
     }
 

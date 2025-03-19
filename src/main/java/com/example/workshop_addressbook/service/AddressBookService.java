@@ -4,6 +4,7 @@ import com.example.workshop_addressbook.dto.AddressBookDTO;
 import com.example.workshop_addressbook.model.AddressBookEntry;
 import com.example.workshop_addressbook.repository.AddressBookRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -26,6 +27,8 @@ public class AddressBookService implements IAddressBookService {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     private static final String CACHE_KEY = "contacts";
 
@@ -63,6 +66,8 @@ public class AddressBookService implements IAddressBookService {
 
         // Remove Cache so new data can be fetched
         redisTemplate.delete(CACHE_KEY);
+
+        rabbitTemplate.convertAndSend("AddressBookExchange", "contactKey", contactDTO.getEmail());
 
         return modelMapper.map(savedContact, AddressBookDTO.class);
     }
