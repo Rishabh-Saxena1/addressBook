@@ -9,4 +9,5 @@ public class WorkshopAddressbookApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(WorkshopAddressbookApplication.class, args);
 	}
+
 }
